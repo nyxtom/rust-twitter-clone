@@ -1,8 +1,18 @@
 [package]
-name = "twitter-clone"
+name = "web"
 version = "0.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+async-std = { version = "1.12.0", features = ["attributes"] }
+handlebars = "4.3.1"
+serde = { version = "1.0.138", features = ["derive"] }
+tide = { version = "0.17.0-beta.1", features = ["sessions", "h1-server", "cookies"] }
+tide-flash = { path = "../tide-flash" }
+env_logger = "0.9.0"
+dotenv = "0.15.0"
+time = { version = "0.2.6", default-features = false, features = ["std"] }
+serde_json = "1.0.82"
+async-redis-session = "0.2.2"

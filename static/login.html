@@ -1,0 +1,18 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+    <h1>Login</h1>
+    {{#each flash }}
+    <span class="flash {{this.level}}">{{this.level}}: {{this.message}}</span>
+    {{/each}}
+    <form method="post" action="/login">
+        <input type="text" name="username" />
+        <input type="password" name="password" />
+        <button type="submit">Login</button>
+    </form>
+</body>
+</html>

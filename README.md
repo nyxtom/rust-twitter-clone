@@ -1,6 +1,6 @@
 # Full Stack Rust Web App - Twitter Clone
 
-This is a programming exercise in Rust to create a simple Twitter clone using the [tide](https://docs.rs/tide) web framework, [async-std](https://docs.rs/async-std), [http-types](https://docs.rs/http-types), [tailwindcss](https://tailwindcss.com), [serde](https://docs.rs/serde) and [mongodb](https://github.com/mongodb/mongo-rust-driver). Since this is a full stack web application, it will also require a deployment setup and I've chosen to use [Digital Ocean](https://www.digitalocean.com/) and the [Digital Ocean App Platform](https://www.digitalocean.com/products/app-platform) to deploy with [Docker Containers](https://www.docker.com/). We will make use of [doctl](https://docs.digitalocean.com/reference/doctl/) when interacting with Digital Ocean to generate a simple `spec.yml` and make it so we can regularly update our project with continuous deployment via git.
+This is a programming exercise in Rust to create a simple Twitter clone using the [tide](https://docs.rs/tide) web framework, [async-std](https://docs.rs/async-std), [http-types](https://docs.rs/http-types), [tailwindcss](https://tailwindcss.com), [serde](https://docs.rs/serde) and [mongodb](https://github.com/mongodb/mongo-rust-driver). Since this is a full stack web application, it will also require a deployment setup and I've chosen to use [Digital Ocean](https://www.digitalocean.com/) and the [Digital Ocean App Platform](https://www.digitalocean.com/products/app-platform) to deploy with [Docker Containers](https://www.docker.com/). We will make use of [doctl](https://docs.digitalocean.com/reference/doctl/) when interacting with Digital Ocean to generate a simple `spec.yml` and make it so we can regularly update our project with continuous deployment through git.
 
 ## Dependencies
 
@@ -15,4 +15,17 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+async-std = { version = "1.12.0", features = ["attributes"] }
+handlebars = "4.3.1"
+serde = { version = "1.0.138", features = ["derive"] }
+serde_json = "1.0.82"
+tide = "0.16.0"
 ```
+
+This will give us the basics we need to build a simple web application using an async runtime ([async-std](https://docs.rs/async-std)), a web framework ([tide](https://docs.rs/tide)), a templating library ([handlebars](https://handlebarsjs.org)), and JSON support ([serde](https://docs.rs/serde)).
+
+## 
+
+
+
+
