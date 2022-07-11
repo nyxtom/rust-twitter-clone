@@ -10,7 +10,7 @@ async-std = { version = "1.12.0", features = ["attributes"] }
 handlebars = "4.3.1"
 serde = { version = "1.0.138", features = ["derive"] }
 tide = { version = "0.17.0-beta.1", features = ["sessions", "h1-server", "cookies"] }
-tide-flash = { path = "../tide-flash" }
+tide-flash = { version = "0.1.1-beta.1" }
 env_logger = "0.9.0"
 dotenv = "0.15.0"
 time = { version = "0.2.6", default-features = false, features = ["std"] }

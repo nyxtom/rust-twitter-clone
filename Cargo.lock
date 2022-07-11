@@ -1684,7 +1684,9 @@ dependencies = [
 
 [[package]]
 name = "tide-flash"
-version = "0.1.0"
+version = "0.1.1-beta.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "58a18884b76b29e51dd1745e35198224ca62f1795b9807d5da5d85ae7f0d30b9"
 dependencies = [
  "async-trait",
  "http-types",
