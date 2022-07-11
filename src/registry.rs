@@ -13,6 +13,7 @@ impl State {
         };
         state.register_template("index.html", "static/index.html");
         state.register_template("login.html", "static/login.html");
+        state.register_template("settings.html", "static/settings.html");
         state
     }
 
