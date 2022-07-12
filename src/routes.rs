@@ -32,6 +32,11 @@ pub async fn settings(req: Request<State>) -> tide::Result {
         return Ok(Redirect::new("/").into());
     }
 
+    // TODO: turning on 2FA (totp) should require re-authenticating to enable/disable
+    // - enabling should display the setup procedure and show the qr code below
+    // - qr code should not be visible again after setup (no need to generate totp uri)
+
+    // TODO: obtain shared totp secret based on authenticated user
     let key_ascii = "12345678901234567890".to_owned();
     let totp = libreauth::oath::TOTPBuilder::new()
         .ascii_key(&key_ascii)
@@ -67,6 +72,7 @@ pub async fn validate_otp(mut req: Request<State>) -> tide::Result {
 
     match req.body_form::<ValidateForm>().await {
         Ok(form) => {
+            // TODO: obtain shared totp secret based on authenticated user
             let key_ascii = "12345678901234567890".to_owned();
             let valid = libreauth::oath::TOTPBuilder::new()
                 .ascii_key(&key_ascii)
@@ -115,7 +121,9 @@ pub async fn logout(mut req: Request<State>) -> tide::Result {
 pub async fn authenticate(mut req: Request<State>) -> tide::Result {
     match req.body_form::<UserForm>().await {
         Ok(form) => {
+            // TODO: authenticate username/password with bcrypt (or similar hashing), compare to db
             if form.username == "foo" && form.password == "bar" {
+                // TODO: generate proper claims based on authenticated user
                 let claims = Claims {
                     username: String::from("foo"),
                     exp: 10000000000,
