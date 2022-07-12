@@ -21,7 +21,7 @@ impl<State> Middleware<State> for AuthenticatedMiddleware
 where
     State: Clone + Send + Sync + 'static,
 {
-    async fn handle(&self, request: Request<State>, next: Next<'_, State>) -> tide::Result {
+    async fn handle(&self, mut request: Request<State>, next: Next<'_, State>) -> tide::Result {
         if !request.is_authenticated() {
             // Redirect::new(/login?redirect=url)
             // Redirect::new(/)
@@ -29,6 +29,10 @@ where
             // 403 Forbidden
             return Ok(Redirect::new("/").into());
             //return Ok(Response::new(StatusCode::Unauthorized));
+        } else if request.prevent_totp_redirect() {
+            // totp should be a one time redirect, require re-login
+            request.logout();
+            return Ok(Redirect::new("/").into());
         }
 
         return Ok(next.run(request).await);

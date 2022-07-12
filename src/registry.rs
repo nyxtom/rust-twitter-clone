@@ -13,6 +13,7 @@ impl State {
         };
         state.register_template("index.html", "static/index.html");
         state.register_template("login.html", "static/login.html");
+        state.register_template("otp.html", "static/otp.html");
         state.register_template("2fa.html", "static/2fa.html");
         state.register_template("settings.html", "static/settings.html");
         state

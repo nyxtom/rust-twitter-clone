@@ -31,6 +31,7 @@ pub fn configure(app: &mut Server<State>) {
         app
     });
 
+    app.at("/otp").post(authenticate_otp);
     app.at("/login").post(authenticate);
 }
 
@@ -62,7 +63,7 @@ pub async fn update_otp(req: Request<State>) -> tide::Result {
         .light_color(svg::Color("#f0f0f0"))
         .build();
 
-    TemplateResponse::with_data(req, "settings.html", json!({ "qrcode": image }))
+    TemplateResponse::with_data(req, "2fa.html", json!({ "qrcode": image }))
 }
 
 pub async fn validate_otp(mut req: Request<State>) -> tide::Result {
@@ -94,9 +95,14 @@ pub async fn validate_otp(mut req: Request<State>) -> tide::Result {
     }
 }
 
-pub async fn index(req: Request<State>) -> tide::Result {
+pub async fn index(mut req: Request<State>) -> tide::Result {
     if !req.is_authenticated() {
         TemplateResponse::new(req, "login.html")
+    } else if req.prevent_totp_redirect() {
+        req.logout();
+        Ok(Redirect::new("/").into())
+    } else if req.requires_totp() {
+        TemplateResponse::new(req, "otp.html")
     } else {
         TemplateResponse::new(req, "index.html")
     }
@@ -118,12 +124,53 @@ pub async fn authenticate(mut req: Request<State>) -> tide::Result {
                     exp: 10000000000,
                     sub: String::from("asdf"),
                     uid: 1,
+                    totp_enabled: true,
+                    totp_attempt: 0,
+                    totp: None,
                 };
                 req.login(claims)?;
                 Ok(Redirect::new("/").into())
             } else {
                 let mut res: tide::Response = Redirect::new("/").into();
                 res.flash_error("invalid credentials");
+                Ok(res)
+            }
+        }
+        Err(e) => {
+            let mut res: tide::Response = Redirect::new("/").into();
+            res.flash_error(e.to_string());
+            Ok(res)
+        }
+    }
+}
+
+pub async fn authenticate_otp(mut req: Request<State>) -> tide::Result {
+    if !req.is_authenticated() || !req.requires_totp() {
+        return Ok(Redirect::new("/").into());
+    }
+
+    match req.body_form::<ValidateForm>().await {
+        Ok(form) => {
+            let key_ascii = "12345678901234567890".to_owned();
+            let valid = libreauth::oath::TOTPBuilder::new()
+                .ascii_key(&key_ascii)
+                .finalize()
+                .unwrap()
+                .is_valid(&form.code);
+            if valid {
+                let mut claims = req.claims().unwrap();
+                claims.totp_attempt = claims.totp_attempt + 1;
+                claims.totp = Some(10000000000);
+                req.login(claims)?;
+                Ok(Redirect::new("/").into())
+            } else {
+                let mut claims = req.claims().unwrap();
+                claims.totp_attempt = claims.totp_attempt + 1;
+                claims.totp = None;
+                req.login(claims)?;
+
+                let mut res: tide::Response = Redirect::new("/").into();
+                res.flash_error("invalid otp");
                 Ok(res)
             }
         }

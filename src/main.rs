@@ -22,13 +22,16 @@ pub struct Claims {
     username: String,
     uid: u64,
     exp: usize,
+    totp_enabled: bool,
+    totp_attempt: usize,
+    totp: Option<usize>,
 }
 
 #[async_std::main]
 async fn main() -> tide::Result<()> {
     let mut app = tide::with_state(State::new());
     dotenv::dotenv().ok();
-    env_logger::init();
+    tide::log::start();
 
     app.with(LogMiddleware::new());
 
