@@ -1,11 +1,11 @@
 use qrcode::render::svg;
 use serde::{Deserialize, Serialize};
-use tide::http::mime;
+use serde_json::json;
 use tide::{Redirect, Request, Response, Server};
 use tide_flash::ext::*;
 
 use crate::prelude::*;
-use crate::render_context::Context;
+use crate::templates::TemplateResponse;
 use crate::{registry::State, Claims};
 
 #[derive(Serialize, Deserialize)]
@@ -21,17 +21,24 @@ pub struct ValidateForm {
 
 pub fn configure(app: &mut Server<State>) {
     app.at("/").get(index);
-    app.at("/settings").get(settings);
-    app.at("/validate-otp").post(validate_otp);
+
+    app.at("/account").authenticated().nest({
+        let mut app = tide::with_state(State::new());
+        app.at("/settings").get(settings);
+        app.at("/update-2fa").get(update_otp);
+        app.at("/validate-otp").post(validate_otp);
+        app.at("/logout").get(logout).post(logout);
+        app
+    });
+
     app.at("/login").post(authenticate);
-    app.at("/logout").get(logout).post(logout);
 }
 
 pub async fn settings(req: Request<State>) -> tide::Result {
-    if !req.is_authenticated() {
-        return Ok(Redirect::new("/").into());
-    }
+    TemplateResponse::new(req, "settings.html")
+}
 
+pub async fn update_otp(req: Request<State>) -> tide::Result {
     // TODO: turning on 2FA (totp) should require re-authenticating to enable/disable
     // - enabling should display the setup procedure and show the qr code below
     // - qr code should not be visible again after setup (no need to generate totp uri)
@@ -46,7 +53,6 @@ pub async fn settings(req: Request<State>) -> tide::Result {
     let uri = totp
         .key_uri_format("TwitterClone", &req.claims().unwrap().username)
         .finalize();
-    println!("{}", uri);
 
     let code = qrcode::QrCode::new(uri).unwrap();
     let image = code
@@ -56,20 +62,10 @@ pub async fn settings(req: Request<State>) -> tide::Result {
         .light_color(svg::Color("#f0f0f0"))
         .build();
 
-    let template =
-        Context::with_data(&req, serde_json::json!({ "qrcode": image })).render("settings.html");
-    let res = Response::builder(200)
-        .body(template?)
-        .content_type(mime::HTML)
-        .build();
-    Ok(res)
+    TemplateResponse::with_data(req, "settings.html", json!({ "qrcode": image }))
 }
 
 pub async fn validate_otp(mut req: Request<State>) -> tide::Result {
-    if !req.is_authenticated() {
-        return Ok(Redirect::new("/").into());
-    }
-
     match req.body_form::<ValidateForm>().await {
         Ok(form) => {
             // TODO: obtain shared totp secret based on authenticated user
@@ -81,17 +77,17 @@ pub async fn validate_otp(mut req: Request<State>) -> tide::Result {
                 .is_valid(&form.code);
 
             if valid {
-                let mut res: Response = Redirect::new("settings").into();
+                let mut res: Response = Redirect::new("/account/update-2fa").into();
                 res.flash_info("valid!");
                 Ok(res)
             } else {
-                let mut res: tide::Response = Redirect::new("/settings").into();
+                let mut res: tide::Response = Redirect::new("/account/update-2fa").into();
                 res.flash_error("invalid code");
                 Ok(res)
             }
         }
         Err(e) => {
-            let mut res: tide::Response = Redirect::new("/settings").into();
+            let mut res: tide::Response = Redirect::new("/update-2fa").into();
             res.flash_error(e.to_string());
             Ok(res)
         }
@@ -99,18 +95,11 @@ pub async fn validate_otp(mut req: Request<State>) -> tide::Result {
 }
 
 pub async fn index(req: Request<State>) -> tide::Result {
-    let template = if !req.is_authenticated() {
-        "login.html"
+    if !req.is_authenticated() {
+        TemplateResponse::new(req, "login.html")
     } else {
-        "index.html"
-    };
-
-    let template = Context::new(&req).render(template);
-    let res = Response::builder(200)
-        .body(template?)
-        .content_type(mime::HTML)
-        .build();
-    Ok(res)
+        TemplateResponse::new(req, "index.html")
+    }
 }
 
 pub async fn logout(mut req: Request<State>) -> tide::Result {
@@ -131,7 +120,6 @@ pub async fn authenticate(mut req: Request<State>) -> tide::Result {
                     uid: 1,
                 };
                 req.login(claims)?;
-                println!("authenticated!");
                 Ok(Redirect::new("/").into())
             } else {
                 let mut res: tide::Response = Redirect::new("/").into();

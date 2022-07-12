@@ -1,0 +1,28 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+    <h1>Hello {{claims.username}}</h1>
+    <ul>
+        <li><a href="/">Home</a></li>
+        <li>Settings</li>
+        <li><a href="/account/logout">Logout</a></li>
+    </ul>
+    <hr/>
+    <h2>Update Two Factor</h2>
+
+    {{{data.qrcode}}}
+    <div>
+        {{#each flash }}
+        <span class="flash {{this.level}}">{{this.level}}: {{this.message}}</span>
+        {{/each}}
+    </div>
+    <form method="post" action="/account/validate-otp">
+        <input type="text" name="code" />
+        <button type="submit">Validate</button>
+    </form>
+</body>
+</html>

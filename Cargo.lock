@@ -2207,6 +2207,7 @@ version = "0.1.0"
 dependencies = [
  "async-redis-session",
  "async-std",
+ "async-trait",
  "dotenv",
  "env_logger",
  "handlebars",

@@ -9,18 +9,12 @@
     <ul>
         <li><a href="/">Home</a></li>
         <li>Settings</li>
-        <li><a href="/logout">Logout</a></li>
+        <li><a href="/account/logout">Logout</a></li>
     </ul>
     <hr/>
     <h2>Settings</h2>
-    {{{data.qrcode}}}
-
-    {{#each flash }}
-    <span class="flash {{this.level}}">{{this.level}}: {{this.message}}</span>
-    {{/each}}
-    <form method="post" action="/validate-otp">
-        <input type="text" name="code" />
-        <button type="submit">Validate</button>
-    </form>
+    <ul>
+        <li><a href="/account/update-2fa">Update Two Factor</a></li>
+    </ul>
 </body>
 </html>

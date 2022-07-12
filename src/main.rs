@@ -5,12 +5,14 @@ use tide::log::LogMiddleware;
 use tide_flash::{cookies::CookieStore, FlashMiddleware};
 
 mod registry;
-mod render_context;
 mod request_ext;
+mod route_ext;
 mod routes;
+mod templates;
 
 mod prelude {
     pub use crate::request_ext::*;
+    pub use crate::route_ext::*;
     pub use tide_flash::ext::*;
 }
 
