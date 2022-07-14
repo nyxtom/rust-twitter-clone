@@ -16,6 +16,7 @@ impl State {
         state.register_template("otp.html", "static/otp.html");
         state.register_template("2fa.html", "static/2fa.html");
         state.register_template("settings.html", "static/settings.html");
+        state.register_template("register.html", "static/register.html");
         state
     }
 

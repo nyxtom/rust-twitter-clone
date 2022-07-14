@@ -5,18 +5,15 @@
     <title></title>
 </head>
 <body>
-    <h1>Login</h1>
+    <h1>Register</h1>
     {{#each flash }}
     <span class="flash {{this.level}}">{{this.level}}: {{this.message}}</span>
     {{/each}}
-    <form method="post" action="/login">
+    <form method="post" action="/register">
         <input type="text" name="username" />
         <input type="password" name="password" />
-        <button type="submit">Login</button>
+        <input type="password" name="confirm_password" />
+        <button type="submit">Create Account</button>
     </form>
-    <hr/>
-    <ul>
-        <li><a href="/register">Create Account</a></li>
-    </ul>
 </body>
 </html>

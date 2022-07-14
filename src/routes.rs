@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 use tide::{Redirect, Request, Server};
+use validator::Validate;
 
 use crate::prelude::*;
 use crate::registry::State;
@@ -12,6 +13,16 @@ mod auth;
 pub struct UserForm {
     username: String,
     password: String,
+}
+
+#[derive(Serialize, Validate, Deserialize)]
+pub struct UserCreateForm {
+    #[validate(email)]
+    username: String,
+    #[validate(length(min = 10))]
+    #[validate(must_match = "confirm_password")]
+    password: String,
+    confirm_password: String,
 }
 
 #[derive(Serialize, Deserialize)]

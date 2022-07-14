@@ -19,3 +19,4 @@ async-redis-session = "0.2.2"
 libreauth = { version = "0.15.0", features = ["oath-uri"] }
 qrcode = "0.12.0"
 async-trait = "0.1.56"
+validator = { version = "0.15.0", features = ["derive"] }

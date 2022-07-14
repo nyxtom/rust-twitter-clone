@@ -1,13 +1,40 @@
 use tide::{Redirect, Request, Server};
+use validator::Validate;
 
-use super::UserForm;
-use super::ValidateForm;
+use super::{UserCreateForm, UserForm, ValidateForm};
 use crate::prelude::*;
+use crate::templates::TemplateResponse;
 use crate::{Claims, State};
 
 pub fn configure(app: &mut Server<State>) {
+    app.at("/register").get(register).post(register_post);
     app.at("/login").post(authenticate);
     app.at("/otp").post(authenticate_otp);
+}
+
+pub async fn register(req: Request<State>) -> tide::Result {
+    TemplateResponse::new(req, "register.html").into()
+}
+
+pub async fn register_post(mut req: Request<State>) -> tide::Result {
+    match req.body_form::<UserCreateForm>().await {
+        Ok(form) => match form.validate() {
+            Ok(_) => {
+                let mut res: tide::Response = Redirect::new("/register").into();
+                Ok(res)
+            }
+            Err(e) => {
+                let mut res: tide::Response = Redirect::new("/register").into();
+                res.flash_error(serde_json::json!(e).to_string());
+                Ok(res)
+            }
+        },
+        Err(e) => {
+            let mut res: tide::Response = Redirect::new("/register").into();
+            res.flash_error(e.to_string());
+            Ok(res)
+        }
+    }
 }
 
 pub async fn authenticate(mut req: Request<State>) -> tide::Result {
