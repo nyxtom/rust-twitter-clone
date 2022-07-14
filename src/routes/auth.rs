@@ -20,12 +20,13 @@ pub async fn register_post(mut req: Request<State>) -> tide::Result {
     match req.body_form::<UserCreateForm>().await {
         Ok(form) => match form.validate() {
             Ok(_) => {
-                let mut res: tide::Response = Redirect::new("/register").into();
+                let res: tide::Response = Redirect::new("/register").into();
                 Ok(res)
             }
             Err(e) => {
                 let mut res: tide::Response = Redirect::new("/register").into();
-                res.flash_error(serde_json::json!(e).to_string());
+                let errors = e.field_errors();
+                res.flash_error(serde_json::json!(errors).to_string());
                 Ok(res)
             }
         },

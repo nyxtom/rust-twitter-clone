@@ -3,6 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <title></title>
+    <style type="text/css">
+    form .flash {
+        display: block;
+        font-size: 12px;
+    }
+    .flash.error {
+        color: red;
+    }
+    </style>
 </head>
 <body>
     <h1>Register</h1>
@@ -10,9 +19,24 @@
     <span class="flash {{this.level}}">{{this.level}}: {{this.message}}</span>
     {{/each}}
     <form method="post" action="/register">
+        {{#each errors.username}}
+        <span class="flash error">{{this.message}}</span>
+        {{/each}}
+        <label for="username">Username</label>
         <input type="text" name="username" />
+
+        <br/>
+        {{#each errors.password }}
+        <span class="flash error">{{this.message}}</span>
+        {{/each}}
+        <label for="password">Password</label>
         <input type="password" name="password" />
+
+        <br/>
+        <label for="confirm_password">Confirm Password</label>
         <input type="password" name="confirm_password" />
+
+        <br/>
         <button type="submit">Create Account</button>
     </form>
 </body>
