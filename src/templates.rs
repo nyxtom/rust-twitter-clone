@@ -1,6 +1,6 @@
 use serde::Serialize;
 use serde_json::json;
-use tide::{Request, StatusCode};
+use tide::{http, Request, StatusCode};
 
 use crate::{prelude::*, registry::State};
 
@@ -8,7 +8,7 @@ pub struct TemplateResponse<T: Serialize> {
     request: Request<State>,
     template: String,
     code: StatusCode,
-    content_type: tide::http::Mime,
+    content_type: http::Mime,
     data: Option<T>,
 }
 
@@ -16,12 +16,12 @@ impl TemplateResponse<()> {
     pub fn new(req: Request<State>, template: &str) -> Self {
         TemplateResponse {
             request: req,
-            content_type: tide::http::Mime::from_extension(template.clone())
-                .unwrap_or(tide::http::mime::HTML),
-            template: template.into(),
+            content_type: http::mime::HTML,
+            template: String::new(),
             code: StatusCode::Ok,
             data: None,
         }
+        .with_template(template)
     }
 }
 
@@ -37,8 +37,8 @@ impl<T: Serialize> TemplateResponse<T> {
     }
 
     pub fn with_template(mut self, template: &str) -> Self {
-        self.content_type =
-            tide::http::Mime::from_extension(template).unwrap_or(tide::http::mime::HTML);
+        let (_, ext) = template.rsplit_once('.').unwrap();
+        self.content_type = http::Mime::from_extension(ext).unwrap_or(tide::http::mime::HTML);
         self.template = template.into();
         self
     }
