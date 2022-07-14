@@ -24,7 +24,7 @@ pub async fn logout(mut req: Request<State>) -> tide::Result {
 }
 
 pub async fn settings(req: Request<State>) -> tide::Result {
-    TemplateResponse::new(req, "settings.html")
+    TemplateResponse::new(req, "settings.html").into()
 }
 
 pub async fn update_otp(req: Request<State>) -> tide::Result {
@@ -51,7 +51,9 @@ pub async fn update_otp(req: Request<State>) -> tide::Result {
         .light_color(svg::Color("#f0f0f0"))
         .build();
 
-    TemplateResponse::with_data(req, "2fa.html", json!({ "qrcode": image }))
+    TemplateResponse::new(req, "2fa.html")
+        .with_data(json!({ "qrcode": image }))
+        .into()
 }
 
 pub async fn validate_otp(mut req: Request<State>) -> tide::Result {

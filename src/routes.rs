@@ -27,13 +27,13 @@ pub fn configure(app: &mut Server<State>) {
 
 pub async fn index(mut req: Request<State>) -> tide::Result {
     if !req.is_authenticated() {
-        TemplateResponse::new(req, "login.html")
+        TemplateResponse::new(req, "login.html").into()
     } else if req.prevent_totp_redirect() {
         req.logout();
         Ok(Redirect::new("/").into())
     } else if req.requires_totp() {
-        TemplateResponse::new(req, "otp.html")
+        TemplateResponse::new(req, "otp.html").into()
     } else {
-        TemplateResponse::new(req, "index.html")
+        TemplateResponse::new(req, "index.html").into()
     }
 }
