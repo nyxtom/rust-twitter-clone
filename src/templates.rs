@@ -1,6 +1,9 @@
+use std::collections::HashMap;
+
 use serde::Serialize;
 use serde_json::json;
 use tide::{http, Request, StatusCode};
+use validator::ValidationError;
 
 use crate::{prelude::*, registry::State};
 
@@ -51,11 +54,31 @@ impl<T: Serialize> TemplateResponse<T> {
 
 impl<T: Serialize> From<TemplateResponse<T>> for tide::Result {
     fn from(res: TemplateResponse<T>) -> Self {
+        let mut field_errors: HashMap<String, Vec<ValidationError>> = HashMap::new();
+        let mut flash_messages = Vec::new();
+        if let Some(messages) = res.request.flash() {
+            for message in messages {
+                let msg = message.message.clone();
+                let validation =
+                    serde_json::from_str::<HashMap<String, Vec<ValidationError>>>(&msg);
+                if let Ok(validation) = validation {
+                    for (k, v) in validation {
+                        let values = field_errors.entry(k).or_default();
+                        for i in v {
+                            values.push(i);
+                        }
+                    }
+                } else {
+                    flash_messages.push(message);
+                }
+            }
+        }
         let template = res.request.state().render(
             &res.template,
             &json!({
-                "flash": res.request.flash(),
+                "flash": flash_messages,
                 "claims": res.request.claims(),
+                "errors": field_errors,
                 "data": res.data
             }),
         )?;
