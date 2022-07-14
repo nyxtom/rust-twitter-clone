@@ -17,10 +17,18 @@ pub struct UserForm {
 
 #[derive(Serialize, Validate, Deserialize)]
 pub struct UserCreateForm {
-    #[validate(email)]
+    #[validate(email(code = "email", message = "Must be a valid e-mail address"))]
     username: String,
-    #[validate(length(min = 10))]
-    #[validate(must_match = "confirm_password")]
+    #[validate(length(
+        min = 10,
+        code = "length",
+        message = "Password must be at least 10 characters"
+    ))]
+    #[validate(must_match(
+        other = "confirm_password",
+        code = "must_match",
+        message = "Password and confirm password must match"
+    ))]
     password: String,
     confirm_password: String,
 }
