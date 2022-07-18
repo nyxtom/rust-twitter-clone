@@ -1,15 +1,13 @@
+use mongodb::Collection;
 use serde::Serialize;
 use tide::Request;
 
-use crate::{
-    registry::USERS,
-    repos::{user::User, Store},
-    Claims,
-};
+use crate::{registry::State, repos::user::User, Claims};
 
 pub trait RequestExt {
     fn is_authenticated(&mut self) -> bool;
     fn user(&self) -> Option<&User>;
+    fn db<T: Serialize>(&self, name: &str) -> Collection<T>;
     fn requires_totp(&self) -> bool;
     fn clear_totp_redirect(&mut self);
     fn prevent_totp_redirect(&mut self) -> bool;
@@ -18,7 +16,7 @@ pub trait RequestExt {
     fn logout(&mut self);
 }
 
-impl<State> RequestExt for Request<State> {
+impl RequestExt for Request<State> {
     fn is_authenticated(&mut self) -> bool {
         if let Some(claims) = self.session().get::<Claims>("tide.uid") {
             println!("claims, {:?}", claims);
@@ -38,6 +36,10 @@ impl<State> RequestExt for Request<State> {
 
     fn user(&self) -> Option<&User> {
         self.ext::<User>()
+    }
+
+    fn db<T: Serialize>(&self, name: &str) -> Collection<T> {
+        self.state().db::<T>(name)
     }
 
     fn requires_totp(&self) -> bool {
