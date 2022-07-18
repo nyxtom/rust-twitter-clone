@@ -21,3 +21,4 @@ qrcode = "0.12.0"
 async-trait = "0.1.56"
 validator = { version = "0.15.0", features = ["derive"] }
 uuid = { version = "1.1.2", features = ["serde", "v4"] }
+mongodb = { version = "2.2.2", features = ["async-std-runtime"], default-features = false }
