@@ -32,10 +32,21 @@ validator = { version = "0.15.0", features = ["derive"] }
 uuid = { version = "1.1.2", features = ["serde", "v4"] }
 ```
 
-This will give us the basics we need to build a simple web application using an async runtime ([async-std](https://docs.rs/async-std)), a web framework ([tide](https://docs.rs/tide)), a templating library ([handlebars](https://handlebarsjs.org)), and JSON support ([serde](https://docs.rs/serde)). A lot of the other dependencies here to are to fill in for logging, [libreauth](https://docs.rs/libreauth) for two-factor totp authentication/token generation/validation, [validator](https://docs.rs/validator) for serde style derive validation on forms via structs, [uuid](https://docs.rs/uuid) for unique id generation, [qrcode](https://docs.rs/qrcode) to generate a qr code for the two-factor token uri, [async-redis-session](https://docs.rs/async-redis-session) to support the [redis](https://redis.io) based backend for session middleware in tide.
+This will give us the basics we need to build a simple web application using an async runtime ([async-std](https://docs.rs/async-std)), a web framework ([tide](https://docs.rs/tide)), a templating library ([handlebars](https://handlebarsjs.org)), and JSON support ([serde](https://docs.rs/serde)). A lot of the other dependencies here to are to fill in for logging, [libreauth](https://docs.rs/libreauth) for two-factor totp authentication/token generation/validation, [validator](https://docs.rs/validator) for serde style derive validation on forms via structs, [uuid](https://docs.rs/uuid) for unique id generation, [qrcode](https://docs.rs/qrcode) to generate a qr code for the two-factor token uri, [async-redis-session](https://docs.rs/async-redis-session) to support the [redis](https://redis.io) based backend for session middleware.
 
-## 
+## Tasks
 
-
-
+- [x] Setup tide web application with basic routes
+- [x] Authenticated user/password manually
+- [x] Store users in memory for now
+- [x] Add support for totp qr code two factor authentication
+- [x] Add authentication middleware via request extensions
+- [x] Template responses to render to handlebar templates
+- [x] Flash style messages for any errors/logging with redirects
+- [x] Register users to memory store
+- [x] Validate forms with validator
+- [x] Use session middleware and session based authentication
+- [x] Add redis backend for session middleware
+- [] Swap out backend for users to actual mongodb backend
+- [] Refactor in memory lookups to use actual queries
 
