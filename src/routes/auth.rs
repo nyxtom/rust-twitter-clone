@@ -62,7 +62,7 @@ pub async fn authenticate(mut req: Request<State>) -> tide::Result {
                     username: user.username.clone(),
                     exp: 10000000000,
                     sub: user.username,
-                    uid: 1,
+                    uid: user._id,
                     totp_enabled: true,
                     totp_attempt: 0,
                     totp: None,

@@ -1,10 +1,15 @@
 use serde::Serialize;
 use tide::Request;
 
-use crate::Claims;
+use crate::{
+    registry::USERS,
+    repos::{user::User, Store},
+    Claims,
+};
 
 pub trait RequestExt {
-    fn is_authenticated(&self) -> bool;
+    fn is_authenticated(&mut self) -> bool;
+    fn user(&self) -> Option<&User>;
     fn requires_totp(&self) -> bool;
     fn clear_totp_redirect(&mut self);
     fn prevent_totp_redirect(&mut self) -> bool;
@@ -14,8 +19,22 @@ pub trait RequestExt {
 }
 
 impl<State> RequestExt for Request<State> {
-    fn is_authenticated(&self) -> bool {
-        self.session().get::<Claims>("tide.uid").is_some()
+    fn is_authenticated(&mut self) -> bool {
+        if let Some(claims) = self.session().get::<Claims>("tide.uid") {
+            if let Ok(user) = USERS.with_borrow(|db| db.get_by_id(claims.uid)) {
+                self.set_ext(user);
+                true
+            } else {
+                self.logout();
+                false
+            }
+        } else {
+            false
+        }
+    }
+
+    fn user(&self) -> Option<&User> {
+        self.ext::<User>()
     }
 
     fn requires_totp(&self) -> bool {

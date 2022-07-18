@@ -24,7 +24,7 @@ mod prelude {
 pub struct Claims {
     sub: String,
     username: String,
-    uid: u64,
+    uid: String,
     exp: usize,
     totp_enabled: bool,
     totp_attempt: usize,
