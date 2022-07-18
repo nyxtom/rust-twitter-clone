@@ -18,11 +18,21 @@ edition = "2021"
 async-std = { version = "1.12.0", features = ["attributes"] }
 handlebars = "4.3.1"
 serde = { version = "1.0.138", features = ["derive"] }
+tide = { version = "0.17.0-beta.1", features = ["sessions", "h1-server", "cookies"] }
+tide-flash = { version = "0.1.1-beta.1" }
+env_logger = "0.9.0"
+dotenv = "0.15.0"
+time = { version = "0.2.6", default-features = false, features = ["std"] }
 serde_json = "1.0.82"
-tide = "0.16.0"
+async-redis-session = "0.2.2"
+libreauth = { version = "0.15.0", features = ["oath-uri"] }
+qrcode = "0.12.0"
+async-trait = "0.1.56"
+validator = { version = "0.15.0", features = ["derive"] }
+uuid = { version = "1.1.2", features = ["serde", "v4"] }
 ```
 
-This will give us the basics we need to build a simple web application using an async runtime ([async-std](https://docs.rs/async-std)), a web framework ([tide](https://docs.rs/tide)), a templating library ([handlebars](https://handlebarsjs.org)), and JSON support ([serde](https://docs.rs/serde)).
+This will give us the basics we need to build a simple web application using an async runtime ([async-std](https://docs.rs/async-std)), a web framework ([tide](https://docs.rs/tide)), a templating library ([handlebars](https://handlebarsjs.org)), and JSON support ([serde](https://docs.rs/serde)). A lot of the other dependencies here to are to fill in for logging, [libreauth](https://docs.rs/libreauth) for two-factor totp authentication/token generation/validation, [validator](https://docs.rs/validator) for serde style derive validation on forms via structs, [uuid](https://docs.rs/uuid) for unique id generation, [qrcode](https://docs.rs/qrcode) to generate a qr code for the two-factor token uri, [async-redis-session](https://docs.rs/async-redis-session) to support the [redis](https://redis.io) based backend for session middleware in tide.
 
 ## 
 
