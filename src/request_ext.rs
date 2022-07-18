@@ -21,10 +21,13 @@ pub trait RequestExt {
 impl<State> RequestExt for Request<State> {
     fn is_authenticated(&mut self) -> bool {
         if let Some(claims) = self.session().get::<Claims>("tide.uid") {
+            println!("claims, {:?}", claims);
             if let Ok(user) = USERS.with_borrow(|db| db.get_by_id(claims.uid)) {
+                println!("user found, {:?}", user);
                 self.set_ext(user);
                 true
             } else {
+                println!("user not found");
                 self.logout();
                 false
             }

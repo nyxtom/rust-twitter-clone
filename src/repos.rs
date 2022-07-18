@@ -4,6 +4,7 @@ pub mod user;
 
 pub trait Store<Id, T> {
     fn insert(&mut self, item: T) -> Result<T, Error>;
+    fn update(&mut self, id: Id, item: T) -> Result<T, Error>;
     fn get_by_id(&self, id: Id) -> Result<T, Error>;
     fn list(&self) -> Result<Vec<T>, Error>;
 }
@@ -27,6 +28,15 @@ impl<T: Clone + UniqueId<String>> Store<String, T> for MemoryStore<T> {
     fn insert(&mut self, item: T) -> Result<T, Error> {
         self.cache.push(item.clone());
         Ok(item)
+    }
+
+    fn update(&mut self, id: String, item: T) -> Result<T, Error> {
+        if let Some(result) = self.cache.iter_mut().find(|p| p.get_id().eq(&Some(&id))) {
+            *result = item;
+            Ok(result.clone())
+        } else {
+            Err(Error::new(std::io::ErrorKind::NotFound, "Not found"))
+        }
     }
 
     fn get_by_id(&self, id: String) -> Result<T, Error> {

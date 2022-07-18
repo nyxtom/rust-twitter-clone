@@ -30,6 +30,8 @@ pub async fn register_post(mut req: Request<State>) -> tide::Result {
                         _id: Uuid::new_v4().to_string(),
                         username: form.username,
                         password: form.password,
+                        totp_enabled: false,
+                        totp_secret: None,
                     })
                 }) {
                     Ok(_) => Ok(res),
@@ -63,7 +65,7 @@ pub async fn authenticate(mut req: Request<State>) -> tide::Result {
                     exp: 10000000000,
                     sub: user.username,
                     uid: user._id,
-                    totp_enabled: true,
+                    totp_enabled: user.totp_enabled,
                     totp_attempt: 0,
                     totp: None,
                 };
@@ -90,7 +92,7 @@ pub async fn authenticate_otp(mut req: Request<State>) -> tide::Result {
 
     match req.body_form::<ValidateForm>().await {
         Ok(form) => {
-            let key_ascii = "12345678901234567890".to_owned();
+            let key_ascii = req.user().unwrap().totp_secret.clone().unwrap();
             let valid = libreauth::oath::TOTPBuilder::new()
                 .ascii_key(&key_ascii)
                 .finalize()

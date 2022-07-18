@@ -10,6 +10,10 @@ pub struct User {
     pub username: String,
     #[serde(skip)]
     pub password: String,
+    #[serde(skip)]
+    pub totp_enabled: bool,
+    #[serde(skip)]
+    pub totp_secret: Option<String>,
 }
 
 impl UniqueId<String> for User {

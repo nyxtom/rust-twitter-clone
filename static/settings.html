@@ -16,5 +16,10 @@
     <ul>
         <li><a href="/account/update-2fa">Update Two Factor</a></li>
     </ul>
+    <div>
+        {{#each flash }}
+        <span class="flash {{this.level}}">{{this.level}}: {{this.message}}</span>
+        {{/each}}
+    </div>
 </body>
 </html>
