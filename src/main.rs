@@ -1,5 +1,5 @@
 #![feature(local_key_cell_methods)]
-use std::time::Duration;
+use std::{future::Future, pin::Pin, time::Duration};
 
 use async_redis_session::RedisSessionStore;
 use registry::State;
@@ -31,18 +31,23 @@ pub struct Claims {
     totp: Option<usize>,
 }
 
-async fn no_store(req: tide::Request<State>, next: tide::Next<'_, State>) -> tide::Result {
+fn no_store<'a>(
+    req: tide::Request<State>,
+    next: tide::Next<'a, State>,
+) -> Pin<Box<dyn Future<Output = tide::Result> + Send + 'a>> {
     use tide::http::cache::{CacheControl, CacheDirective};
-    let mut res = next.run(req).await;
+    Box::pin(async {
+        let mut res = next.run(req).await;
 
-    if let None = res.header("Cache-Control") {
-        let mut header = CacheControl::new();
-        header.push(CacheDirective::NoStore);
-        header.push(CacheDirective::MaxAge(Duration::from_secs(0)));
+        if let None = res.header("Cache-Control") {
+            let mut header = CacheControl::new();
+            header.push(CacheDirective::NoStore);
+            header.push(CacheDirective::MaxAge(Duration::from_secs(0)));
 
-        res.insert_header(header.name(), header.value());
-    }
-    Ok(res)
+            res.insert_header(header.name(), header.value());
+        }
+        Ok(res)
+    })
 }
 
 #[async_std::main]
@@ -51,6 +56,7 @@ async fn main() -> tide::Result<()> {
     dotenv::dotenv().ok();
     tide::log::start();
 
+    app.with(no_store);
     app.with(LogMiddleware::new());
 
     // configure openid connect and session middleware
