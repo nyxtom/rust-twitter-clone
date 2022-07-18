@@ -1,23 +1,23 @@
-use std::cell::RefCell;
-
 use handlebars::Handlebars;
+use mongodb::{Client, Collection};
 use serde::Serialize;
 
-use crate::repos::{user::User, MemoryStore};
-
-thread_local! {
-    pub static USERS: RefCell<MemoryStore<User>> = RefCell::new(MemoryStore::new());
-}
+use crate::repos::user::User;
 
 #[derive(Clone)]
 pub struct State {
     pub registry: Handlebars<'static>,
+    pub client: Client,
+    db_name: String,
 }
 
 impl State {
-    pub fn new() -> State {
+    pub fn new(client: Client) -> State {
+        let db_name = std::env::var("DB_NAME").expect("Must specify a database name");
         let mut state = State {
             registry: Handlebars::new(),
+            client,
+            db_name,
         };
         state.register_template("index.html", "static/index.html");
         state.register_template("login.html", "static/login.html");
@@ -30,6 +30,16 @@ impl State {
 
     pub fn register_template(&mut self, name: &str, path: &str) {
         self.registry.register_template_file(name, path).unwrap();
+    }
+
+    pub fn db<T: Serialize>(&self, collection_name: &str) -> Collection<T> {
+        self.client
+            .database(&self.db_name)
+            .collection::<T>(collection_name)
+    }
+
+    pub fn users(&self) -> Collection<User> {
+        self.db::<User>("users")
     }
 
     pub fn render<T: Serialize>(

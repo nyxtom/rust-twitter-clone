@@ -2,6 +2,7 @@
 use std::{future::Future, pin::Pin, time::Duration};
 
 use async_redis_session::RedisSessionStore;
+use mongodb::{options::ClientOptions, Client};
 use registry::State;
 use serde::{Deserialize, Serialize};
 use tide::log::LogMiddleware;
@@ -52,7 +53,15 @@ fn no_store<'a>(
 
 #[async_std::main]
 async fn main() -> tide::Result<()> {
-    let mut app = tide::with_state(State::new());
+    // configure mongodb client options
+    let mongodb_url = std::env::var("MONGODB_URI")?;
+    let app_name = std::env::var("APP_NAME")?;
+    let mut client_options = ClientOptions::parse(mongodb_url).await?;
+    client_options.app_name = Some(app_name);
+    let client = Client::with_options(client_options)?;
+
+    // setup tide app with client
+    let mut app = tide::with_state(State::new(client));
     dotenv::dotenv().ok();
     tide::log::start();
 

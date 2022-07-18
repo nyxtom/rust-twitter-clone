@@ -10,8 +10,9 @@ use crate::templates::TemplateResponse;
 use crate::State;
 
 pub fn configure(app: &mut Server<State>) {
+    let state = app.state().clone();
     app.at("/account").authenticated().nest({
-        let mut app = tide::with_state(State::new());
+        let mut app = tide::with_state(state);
         app.at("/settings").get(settings);
         app.at("/update-2fa").get(update_otp);
         app.at("/validate-otp").post(validate_otp);
