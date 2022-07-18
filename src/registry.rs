@@ -1,13 +1,21 @@
+use std::cell::RefCell;
+
 use handlebars::Handlebars;
 use serde::Serialize;
 
-#[derive(Debug, Clone)]
+use crate::repos::{user::User, MemoryStore};
+
+thread_local! {
+    pub static USERS: RefCell<MemoryStore<User>> = RefCell::new(MemoryStore::new());
+}
+
+#[derive(Clone)]
 pub struct State {
     pub registry: Handlebars<'static>,
 }
 
 impl State {
-    pub fn new() -> Self {
+    pub fn new() -> State {
         let mut state = State {
             registry: Handlebars::new(),
         };
