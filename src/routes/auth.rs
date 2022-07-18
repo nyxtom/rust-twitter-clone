@@ -1,8 +1,12 @@
 use tide::{Redirect, Request, Server};
+use uuid::Uuid;
 use validator::Validate;
 
 use super::{UserCreateForm, UserForm, ValidateForm};
 use crate::prelude::*;
+use crate::registry::USERS;
+use crate::repos::user::{User, UserStore};
+use crate::repos::*;
 use crate::templates::TemplateResponse;
 use crate::{Claims, State};
 
@@ -20,13 +24,25 @@ pub async fn register_post(mut req: Request<State>) -> tide::Result {
     match req.body_form::<UserCreateForm>().await {
         Ok(form) => match form.validate() {
             Ok(_) => {
-                let res: tide::Response = Redirect::new("/register").into();
-                Ok(res)
+                let res: tide::Response = Redirect::new("/").into();
+                match USERS.with_borrow_mut(|db| {
+                    db.insert(User {
+                        _id: Uuid::new_v4().to_string(),
+                        username: form.username,
+                        password: form.password,
+                    })
+                }) {
+                    Ok(_) => Ok(res),
+                    Err(_) => {
+                        let mut res: tide::Response = Redirect::new("/register").into();
+                        res.flash_error("invalid credentials");
+                        Ok(res)
+                    }
+                }
             }
             Err(e) => {
                 let mut res: tide::Response = Redirect::new("/register").into();
-                let errors = e.field_errors();
-                res.flash_error(serde_json::json!(errors).to_string());
+                res.flash_error(serde_json::json!(e.field_errors()).to_string());
                 Ok(res)
             }
         },
@@ -40,14 +56,12 @@ pub async fn register_post(mut req: Request<State>) -> tide::Result {
 
 pub async fn authenticate(mut req: Request<State>) -> tide::Result {
     match req.body_form::<UserForm>().await {
-        Ok(form) => {
-            // TODO: authenticate username/password with bcrypt (or similar hashing), compare to db
-            if form.username == "foo" && form.password == "bar" {
-                // TODO: generate proper claims based on authenticated user
+        Ok(form) => USERS.with_borrow_mut(|db| {
+            if let Ok(user) = db.authenticate(form.username, form.password) {
                 let claims = Claims {
-                    username: String::from("foo"),
+                    username: user.username.clone(),
                     exp: 10000000000,
-                    sub: String::from("asdf"),
+                    sub: user.username,
                     uid: 1,
                     totp_enabled: true,
                     totp_attempt: 0,
@@ -60,7 +74,7 @@ pub async fn authenticate(mut req: Request<State>) -> tide::Result {
                 res.flash_error("invalid credentials");
                 Ok(res)
             }
-        }
+        }),
         Err(e) => {
             let mut res: tide::Response = Redirect::new("/").into();
             res.flash_error(e.to_string());
